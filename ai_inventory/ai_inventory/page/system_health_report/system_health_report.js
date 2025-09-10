@@ -1,4 +1,5 @@
 // system_health_report.js - Page implementation
+
 frappe.pages['system-health-report'].on_page_load = function(wrapper) {
     var page = frappe.ui.make_app_page({
         parent: wrapper,
@@ -933,9 +934,9 @@ class SystemHealthReport {
                 <tr>
                     <td><a href="/app/ai-financial-forecast/${forecast.name}" target="_blank">${forecast.name}</a></td>
                     <td>${forecast.account}</td>
-                    <td>₹${(forecast.predicted_amount || 0).toLocaleString()}</td>
-                    <td>₹${(forecast.upper_bound || 0).toLocaleString()}</td>
-                    <td>₹${(forecast.lower_bound || 0).toLocaleString()}</td>
+                    <td>${format_currency_js(forecast.predicted_amount || 0)}</td>
+                    <td>${format_currency_js(forecast.upper_bound || 0)}</td>
+                    <td>${format_currency_js(forecast.lower_bound || 0)}</td>
                     <td>
                         <button class="btn btn-sm btn-primary" onclick="system_health_report.fix_individual_forecast('${forecast.name}')">
                             Fix

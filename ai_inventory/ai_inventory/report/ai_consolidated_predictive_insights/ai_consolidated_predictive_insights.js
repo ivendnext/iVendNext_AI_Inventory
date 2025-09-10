@@ -1035,7 +1035,7 @@ function show_analysis_dialog(analysis_data) {
     if (analysis_data.total_revenue_potential !== undefined) {
         html += `
             <div style="display: inline-block; margin-right: 20px; text-align: center; padding: 10px; background: #e8f5e8; border-radius: 5px;">
-                <strong style="font-size: 18px; color: #388e3c;">₹${(analysis_data.total_revenue_potential / 1000).toFixed(0)}K</strong><br>
+                <strong style="font-size: 18px; color: #388e3c;">${format_currency_js(analysis_data.total_revenue_potential / 1000, get_report_currency()).replace(/[0-9,.]+/, (analysis_data.total_revenue_potential / 1000).toFixed(0) + 'K')}</strong><br>
                 <small>Revenue Potential</small>
             </div>
         `;
@@ -1276,7 +1276,7 @@ function show_purchase_order_preview_dialog(preview_data) {
                     <small style="color: #424242;">Items to Order</small>
                 </div>
                 <div style="text-align: center; padding: 15px; background: #fff3e0; border-radius: 8px;">
-                    <strong style="font-size: 20px; color: #f57c00; display: block;">₹${(summary.total_estimated_cost || 0).toLocaleString()}</strong>
+                    <strong style="font-size: 20px; color: #f57c00; display: block;">${format_currency_js(summary.total_estimated_cost || 0)}</strong>
                     <small style="color: #424242;">Total Cost</small>
                 </div>
                 <div style="text-align: center; padding: 15px; background: #ffebee; border-radius: 8px;">
@@ -1303,7 +1303,7 @@ function show_purchase_order_preview_dialog(preview_data) {
             html += `
                 <div style="padding: 8px 12px; background: white; border-radius: 4px; border-left: 3px solid #2196f3;">
                     <strong style="color: #1976d2;">${supplier}</strong><br>
-                    <small style="color: #666;">${data.items} items • ₹${data.amount.toLocaleString()} (${data.percentage}%)</small>
+                    <small style="color: #666;">${data.items} items • ${format_currency_js(data.amount)} (${data.percentage}%)</small>
                 </div>
             `;
         });
@@ -1379,7 +1379,7 @@ function show_purchase_order_preview_dialog(preview_data) {
                                onchange="update_preview_amount(this, ${index}, this.value)">
                     </td>
                     <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: center;">
-                        <strong id="amount-${index}">₹${(item.amount || 0).toLocaleString()}</strong>
+                        <strong id="amount-${index}">${format_currency_js(item.amount || 0)}</strong>
                     </td>
                     <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: center;">
                         <select style="width: 140px; padding: 4px; border: 1px solid #ddd; border-radius: 4px;"
@@ -1457,7 +1457,7 @@ function show_purchase_order_preview_dialog(preview_data) {
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
                 <strong style="color: #ef6c00;">⚠️ Purchase Order Creation:</strong>
                 <div style="text-align: right;">
-                    <strong style="color: #1976d2; font-size: 18px;">Total: ₹<span id="total-amount">${(preview_data.total_amount || 0).toLocaleString()}</span></strong><br>
+                    <strong style="color: #1976d2; font-size: 18px;">Total: <span id="total-amount">${format_currency_js(preview_data.total_amount || 0)}</span></strong><br>
                     <small style="color: #666;">${preview_data.items_count || 0} items from multiple suppliers</small>
                 </div>
             </div>
@@ -1583,7 +1583,7 @@ function update_preview_amount(input, index, rate) {
         // Update the amount display
         const amountElement = document.getElementById(`amount-${index}`);
         if (amountElement) {
-            amountElement.textContent = `₹${amount.toLocaleString()}`;
+            amountElement.textContent = format_currency_js(amount);
         }
         
         // Recalculate total
@@ -1747,7 +1747,7 @@ function show_purchase_order_success_dialog(success_data) {
                 <div style="color: #424242; font-size: 14px;">Items Ordered</div>
             </div>
             <div style="text-align: center; padding: 20px; background: #e8f5e8; border-radius: 10px; border-left: 4px solid #4caf50;">
-                <div style="font-size: 24px; font-weight: bold; color: #388e3c;">₹${(success_data.total_amount || 0).toLocaleString()}</div>
+                <div style="font-size: 24px; font-weight: bold; color: #388e3c;">${format_currency_js(success_data.total_amount || 0)}</div>
                 <div style="color: #424242; font-size: 14px;">Total Amount</div>
             </div>
             <div style="text-align: center; padding: 20px; background: #fff3e0; border-radius: 10px; border-left: 4px solid #ff9800;">

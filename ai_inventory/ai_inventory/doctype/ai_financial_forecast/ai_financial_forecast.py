@@ -6,6 +6,7 @@ from frappe.model.document import Document
 import json
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Union
+from ai_inventory.utils.currency_utils import get_report_currency, format_currency
 
 class AIFinancialForecast(Document):
     """Enhanced AI Financial Forecast Document Controller"""
@@ -147,12 +148,12 @@ class AIFinancialForecast(Document):
                 variance = abs(account_balance - calculated_balance)
                 variance_pct = (variance / abs(account_balance)) * 100 if account_balance != 0 else 0
                 
-                if variance > 1000 or variance_pct > 5:  # More than ₹1000 or 5% difference
+                if variance > 1000 or variance_pct > 5:  # More than 1000 units or 5% difference
                     frappe.msgprint(
                         f"💰 Balance Variance Detected: "
-                        f"Account Balance=₹{account_balance:,.2f}, "
-                        f"Calculated=₹{calculated_balance:,.2f}, "
-                        f"Variance=₹{variance:,.2f} ({variance_pct:.1f}%)",
+                        f"Account Balance={format_currency(account_balance, company=self.company)}, "
+                        f"Calculated={format_currency(calculated_balance, company=self.company)}, "
+                        f"Variance={format_currency(variance, company=self.company)} ({variance_pct:.1f}%)",
                         alert=True
                     )
             
@@ -165,8 +166,8 @@ class AIFinancialForecast(Document):
                 if prediction_variance_pct > 200:  # More than 200% difference
                     frappe.msgprint(
                         f"📊 Large Prediction Variance: "
-                        f"Current=₹{current_balance:,.2f}, "
-                        f"Predicted=₹{self.predicted_amount:,.2f}, "
+                        f"Current={format_currency(current_balance, company=self.company)}, "
+                        f"Predicted={format_currency(self.predicted_amount, company=self.company)}, "
                         f"Variance={prediction_variance_pct:.1f}%. "
                         f"Please verify forecast parameters.",
                         alert=True
@@ -176,7 +177,7 @@ class AIFinancialForecast(Document):
             if current_balance < 0 and self.account_type in ["Bank", "Cash", "Asset"]:
                 frappe.msgprint(
                     f"🚨 Negative balance detected for {self.account_type} account: "
-                    f"₹{current_balance:,.2f}. This may indicate an overdraft or data error.",
+                    f"{format_currency(current_balance, company=self.company)}. This may indicate an overdraft or data error.",
                     alert=True
                 )
             
@@ -259,7 +260,7 @@ class AIFinancialForecast(Document):
                     "doctype": "AI Forecast Log",
                     "forecast_id": self.name,
                     "action": "Balance Tracked",
-                    "details": f"Balance: ₹{balance_info['current_balance']:,.2f} for {self.account}",
+                    "details": f"Balance: {format_currency(balance_info['current_balance'], company=self.company)} for {self.account}",
                     "user": frappe.session.user
                 }).insert(ignore_permissions=True)
                 
@@ -305,13 +306,13 @@ class AIFinancialForecast(Document):
             if current_balance < critical_balance_threshold:
                 alerts.append({
                     "type": "critical",
-                    "message": f"Critical low balance: ₹{current_balance:,.2f} (threshold: ₹{critical_balance_threshold:,.2f})",
+                    "message": f"Critical low balance: {format_currency(current_balance, company=self.company)} (threshold: {format_currency(critical_balance_threshold, company=self.company)})",
                     "action_required": True
                 })
             elif current_balance < low_balance_threshold:
                 alerts.append({
                     "type": "warning",
-                    "message": f"Low balance warning: ₹{current_balance:,.2f} (threshold: ₹{low_balance_threshold:,.2f})",
+                    "message": f"Low balance warning: {format_currency(current_balance, company=self.company)} (threshold: {format_currency(low_balance_threshold, company=self.company)})",
                     "action_required": False
                 })
             
@@ -319,7 +320,7 @@ class AIFinancialForecast(Document):
             if current_balance < 0:
                 alerts.append({
                     "type": "critical",
-                    "message": f"Negative balance detected: ₹{current_balance:,.2f}",
+                    "message": f"Negative balance detected: {format_currency(current_balance, company=self.company)}",
                     "action_required": True
                 })
             
@@ -331,7 +332,7 @@ class AIFinancialForecast(Document):
                 if variance_pct > 50:  # More than 50% variance
                     alerts.append({
                         "type": "info",
-                        "message": f"Large variance from prediction: Current=₹{current_balance:,.2f}, Predicted=₹{self.predicted_amount:,.2f} ({variance_pct:.1f}% difference)",
+                        "message": f"Large variance from prediction: Current={format_currency(current_balance, company=self.company)}, Predicted={format_currency(self.predicted_amount, company=self.company)} ({variance_pct:.1f}% difference)",
                         "action_required": False
                     })
             
@@ -412,8 +413,8 @@ class AIFinancialForecast(Document):
         if self.upper_bound and self.lower_bound:
             if self.upper_bound <= self.lower_bound:
                 frappe.throw(
-                    f"🚨 CRITICAL ERROR: Upper bound (₹{self.upper_bound:,.2f}) "
-                    f"must be greater than lower bound (₹{self.lower_bound:,.2f}). "
+                    f"🚨 CRITICAL ERROR: Upper bound ({format_currency(self.upper_bound, company=self.company)}) "
+                    f"must be greater than lower bound ({format_currency(self.lower_bound, company=self.company)}). "
                     f"This indicates a calculation error in the forecasting algorithm."
                 )
         
@@ -422,8 +423,8 @@ class AIFinancialForecast(Document):
             if self.upper_bound and self.predicted_amount > self.upper_bound:
                 variance_pct = ((self.predicted_amount - self.upper_bound) / self.upper_bound) * 100
                 frappe.msgprint(
-                    f"⚠️ WARNING: Predicted amount (₹{self.predicted_amount:,.2f}) "
-                    f"exceeds upper bound (₹{self.upper_bound:,.2f}) by {variance_pct:.1f}%. "
+                    f"⚠️ WARNING: Predicted amount ({format_currency(self.predicted_amount, company=self.company)}) "
+                    f"exceeds upper bound ({format_currency(self.upper_bound, company=self.company)}) by {variance_pct:.1f}%. "
                     f"Consider reviewing model parameters.",
                     alert=True
                 )
@@ -431,8 +432,8 @@ class AIFinancialForecast(Document):
             if self.lower_bound and self.predicted_amount < self.lower_bound:
                 variance_pct = ((self.lower_bound - self.predicted_amount) / self.lower_bound) * 100
                 frappe.msgprint(
-                    f"⚠️ WARNING: Predicted amount (₹{self.predicted_amount:,.2f}) "
-                    f"is below lower bound (₹{self.lower_bound:,.2f}) by {variance_pct:.1f}%. "
+                    f"⚠️ WARNING: Predicted amount ({format_currency(self.predicted_amount, company=self.company)}) "
+                    f"is below lower bound ({format_currency(self.lower_bound, company=self.company)}) by {variance_pct:.1f}%. "
                     f"Consider reviewing model parameters.",
                     alert=True
                 )
@@ -445,7 +446,7 @@ class AIFinancialForecast(Document):
             if prediction_pct > 100:  # Bounds spread > 100% of prediction
                 frappe.msgprint(
                     f"📊 NOTICE: Wide prediction range detected. "
-                    f"Bounds spread: ₹{bounds_spread:,.2f} ({prediction_pct:.1f}% of prediction). "
+                    f"Bounds spread: {format_currency(bounds_spread, company=self.company)} ({prediction_pct:.1f}% of prediction). "
                     f"This may indicate high uncertainty in the forecast.",
                     alert=True
                 )
@@ -1228,7 +1229,7 @@ class AIFinancialForecast(Document):
             <h3>Forecast Alert</h3>
             <p><strong>Account:</strong> {self.account}</p>
             <p><strong>Forecast Type:</strong> {self.forecast_type}</p>
-            <p><strong>Predicted Amount:</strong> {frappe.utils.fmt_money(self.predicted_amount or 0)}</p>
+            <p><strong>Predicted Amount:</strong> {format_currency(self.predicted_amount or 0)}</p>
             <h4>Alert Conditions:</h4>
             <ul>{''.join(f'<li>{msg}</li>' for msg in messages)}</ul>
             <p>Please review and take appropriate action.</p>
@@ -1396,9 +1397,9 @@ class AIFinancialForecast(Document):
             if current_balance is not None:
                 balance_date = getattr(self, 'balance_as_of_date', None)
                 if balance_date:
-                    health_indicators.append({"type": "info", "message": f"Current balance: ₹{current_balance:,.2f} (as of {frappe.utils.formatdate(balance_date)})"})
+                    health_indicators.append({"type": "info", "message": f"Current balance: {format_currency(current_balance, company=self.company)} (as of {frappe.utils.formatdate(balance_date)})"})
                 else:
-                    health_indicators.append({"type": "info", "message": f"Current balance: ₹{current_balance:,.2f}"})
+                    health_indicators.append({"type": "info", "message": f"Current balance: {format_currency(current_balance, company=self.company)}"})
             else:
                 health_indicators.append({"type": "warning", "message": "Current balance not available"})
             summary["health_indicators"] = health_indicators
@@ -1430,7 +1431,7 @@ class AIFinancialForecast(Document):
                 
                 return {
                     "success": True,
-                    "message": f"Bounds corrected: Upper bound set to ₹{self.upper_bound:,.2f}, Lower bound set to ₹{self.lower_bound:,.2f}",
+                    "message": f"Bounds corrected: Upper bound set to {format_currency(self.upper_bound, company=self.company)}, Lower bound set to {format_currency(self.lower_bound, company=self.company)}",
                     "action_taken": "Swapped upper and lower bounds"
                 }
             

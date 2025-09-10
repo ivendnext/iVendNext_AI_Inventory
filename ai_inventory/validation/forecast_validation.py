@@ -5,6 +5,7 @@ import frappe
 import json
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Union
+from ai_inventory.utils.currency_utils import get_report_currency, format_currency
 
 class ForecastValidationSystem:
     """Comprehensive validation system for AI Financial Forecasts"""
@@ -77,8 +78,8 @@ class ForecastValidationSystem:
         
         if forecast.upper_bound <= forecast.lower_bound:
             self.critical_issues.append(
-                f"🚨 CRITICAL: Upper bound (₹{forecast.upper_bound:,.2f}) "
-                f"is less than or equal to lower bound (₹{forecast.lower_bound:,.2f})"
+                f"🚨 CRITICAL: Upper bound ({format_currency(forecast.upper_bound, company=forecast.company)}) "
+                f"is less than or equal to lower bound ({format_currency(forecast.lower_bound, company=forecast.company)})"
             )
             return False
         
@@ -86,11 +87,11 @@ class ForecastValidationSystem:
         if forecast.predicted_amount:
             if forecast.predicted_amount > forecast.upper_bound:
                 self.warnings.append(
-                    f"Predicted amount (₹{forecast.predicted_amount:,.2f}) exceeds upper bound"
+                    f"Predicted amount ({format_currency(forecast.predicted_amount, company=forecast.company)}) exceeds upper bound"
                 )
             elif forecast.predicted_amount < forecast.lower_bound:
                 self.warnings.append(
-                    f"Predicted amount (₹{forecast.predicted_amount:,.2f}) is below lower bound"
+                    f"Predicted amount ({format_currency(forecast.predicted_amount, company=forecast.company)}) is below lower bound"
                 )
         
         return True
@@ -108,7 +109,7 @@ class ForecastValidationSystem:
                 
                 if forecast_balance:
                     difference = abs(current_balance - forecast_balance)
-                    tolerance = 1.0  # ₹1 tolerance
+                    tolerance = 1.0  # 1 unit tolerance
                     
                     return {
                         "valid": difference <= tolerance,

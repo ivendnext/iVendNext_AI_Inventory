@@ -1,6 +1,7 @@
 # manufacturing_dashboard_report.py
 import frappe
 from frappe import _
+from ai_inventory.utils.currency_utils import get_report_currency, format_currency
 import json
 from datetime import datetime, timedelta
 
@@ -849,8 +850,12 @@ def export_manufacturing_to_pdf(data):
         frappe.log_error(f"Manufacturing PDF export error: {str(e)}")
         return {"success": False, "error": str(e)}
 
+
 def generate_manufacturing_html_report(data):
     """Generate HTML version of manufacturing dashboard"""
+    
+    # Get the currency for this report
+    report_currency = get_report_currency(data.get('company'))
     
     html = f"""
     <!DOCTYPE html>
@@ -877,7 +882,7 @@ def generate_manufacturing_html_report(data):
         
         <div class="kpi-grid">
             <div class="kpi-card">
-                <h3>₹{data['summary']['total_production_forecast']:,.0f}</h3>
+                <h3>{format_currency(data['summary']['total_production_forecast'], currency=report_currency)}</h3>
                 <p>Production Forecast</p>
             </div>
             <div class="kpi-card">
@@ -899,17 +904,17 @@ def generate_manufacturing_html_report(data):
             </tr>
             <tr>
                 <td>Raw Materials</td>
-                <td>₹{data['cost_analysis']['cost_breakdown']['raw_materials']:,.0f}</td>
+                <td>{format_currency(data['cost_analysis']['cost_breakdown']['raw_materials'], currency=report_currency)}</td>
                 <td>{data['cost_analysis']['cost_structure']['raw_materials_percent']:.1f}%</td>
             </tr>
             <tr>
                 <td>Labor</td>
-                <td>₹{data['cost_analysis']['cost_breakdown']['labor']:,.0f}</td>
+                <td>{format_currency(data['cost_analysis']['cost_breakdown']['labor'], currency=report_currency)}</td>
                 <td>{data['cost_analysis']['cost_structure']['labor_percent']:.1f}%</td>
             </tr>
             <tr>
                 <td>Overhead</td>
-                <td>₹{data['cost_analysis']['cost_breakdown']['overhead']:,.0f}</td>
+                <td>{format_currency(data['cost_analysis']['cost_breakdown']['overhead'], currency=report_currency)}</td>
                 <td>{data['cost_analysis']['cost_structure']['overhead_percent']:.1f}%</td>
             </tr>
         </table>

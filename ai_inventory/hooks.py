@@ -139,7 +139,7 @@ fixtures = [
 
 # include js, css files in header of desk.html
 app_include_css = "/assets/ai_inventory/css/ai_financial_settings.css"
-# app_include_js = "/assets/ai_inventory/js/ai_inventory.js"
+app_include_js = "/assets/ai_inventory/js/currency_utils.js"
 
 # Pages
 page_js = {

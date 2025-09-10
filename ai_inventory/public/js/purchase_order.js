@@ -162,10 +162,10 @@ function display_price_predictions(wrapper, predictions, frm, dialog) {
         html += `
             <tr>
                 <td><strong>${pred.item_code}</strong></td>
-                <td>₹${current_rate.toFixed(2)}</td>
-                <td>₹${predicted_price.toFixed(2)}</td>
+                <td>${format_currency_js(current_rate)}</td>
+                <td>${format_currency_js(predicted_price)}</td>
                 <td class="${difference_color}">
-                    ${difference >= 0 ? '+' : ''}₹${difference.toFixed(2)}
+                    ${difference >= 0 ? '+' : ''}${format_currency_js(Math.abs(difference))}
                     (${difference_percent >= 0 ? '+' : ''}${difference_percent.toFixed(1)}%)
                 </td>
                 <td class="${confidence_color}">${confidence}%</td>
@@ -187,7 +187,7 @@ function display_price_predictions(wrapper, predictions, frm, dialog) {
                 <h5>📊 Prediction Summary</h5>
                 <ul>
                     <li><strong>High Confidence Predictions:</strong> ${high_confidence_count} out of ${predictions.length} items</li>
-                    <li><strong>Potential Impact:</strong> ₹${Math.abs(total_savings).toFixed(2)} per order</li>
+                    <li><strong>Potential Impact:</strong> ${format_currency_js(Math.abs(total_savings))} per order</li>
                     <li><strong>Recommendation:</strong> Apply predictions with confidence > 70%</li>
                 </ul>
             </div>
@@ -222,7 +222,7 @@ window.apply_predicted_price = function(index, predicted_price, confidence) {
         frm.refresh_field('items');
         
         frappe.show_alert({
-            message: __('Applied ML predicted price: ₹{0} (Confidence: {1}%)', [predicted_price.toFixed(2), confidence]),
+            message: __('Applied ML predicted price: {0} (Confidence: {1}%)', [format_currency_js(predicted_price), confidence]),
             indicator: 'green'
         });
     }
@@ -291,8 +291,8 @@ function get_ml_price_prediction_for_item(frm, row, cdt, cdn) {
                         
                         if (difference_percent > 10) {
                             frappe.show_alert({
-                                message: __('ML suggests ₹{0} for {1} (Confidence: {2}%)', [
-                                    predicted_price.toFixed(2), 
+                                message: __('ML suggests {0} for {1} (Confidence: {2}%)', [
+                                    format_currency_js(predicted_price), 
                                     row.item_code, 
                                     confidence
                                 ]),
@@ -304,7 +304,7 @@ function get_ml_price_prediction_for_item(frm, row, cdt, cdn) {
                         if (confidence > 80) {
                             frappe.model.set_value(cdt, cdn, 'rate', predicted_price);
                             frappe.show_alert({
-                                message: __('Auto-applied ML price: ₹{0}', [predicted_price.toFixed(2)]),
+                                message: __('Auto-applied ML price: {0}', [format_currency_js(predicted_price)]),
                                 indicator: 'green'
                             });
                         }
@@ -420,7 +420,7 @@ function display_forecasts_preview(wrapper, forecasts) {
         <div style="margin-top: 15px;">
             <h5>📋 Forecast Preview (${forecasts.length} items)</h5>
             <div class="alert alert-primary">
-                <strong>Estimated Order Value:</strong> ₹${total_value.toFixed(2)}
+                <strong>Estimated Order Value:</strong> ${format_currency_js(total_value)}
             </div>
             
             <table class="table table-bordered table-sm">

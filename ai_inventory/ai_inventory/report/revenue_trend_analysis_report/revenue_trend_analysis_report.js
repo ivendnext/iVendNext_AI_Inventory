@@ -237,7 +237,7 @@ function generate_breakdown_html(data) {
             html += `
                 <tr>
                     <td>${account.account_name}</td>
-                    <td>₹${account.total_revenue.toLocaleString()}</td>
+                    <td>${format_currency_js(account.total_revenue)}</td>
                     <td>${account.percentage}%</td>
                     <td>${account.avg_confidence}%</td>
                 </tr>`;
@@ -249,7 +249,7 @@ function generate_breakdown_html(data) {
     html += `
                 </tbody>
             </table>
-            <p><strong>Total Revenue:</strong> ₹${data.total_revenue ? data.total_revenue.toLocaleString() : 0}</p>
+            <p><strong>Total Revenue:</strong> ${format_currency_js(data.total_revenue || 0)}</p>
         </div>
         
         <style>
