@@ -1,8 +1,10 @@
 # risk_assessment_dashboard.py
 import frappe
 from frappe import _
+from ai_inventory.utils.currency_utils import get_report_currency, format_currency
 import json
 from datetime import datetime, timedelta
+
 import statistics
 
 def execute(filters=None):
@@ -412,7 +414,7 @@ def assess_cash_flow_risk(company=None, period_months=6):
             "probability": min(90, negative_months.negative_count * 20),
             "impact": "High",
             "description": f"Forecasted negative cash flow for {negative_months.negative_count} months",
-            "worst_case_scenario": f"₹{abs(negative_months.worst_month):,.2f} negative in worst month",
+            "worst_case_scenario": f"{format_currency(abs(negative_months.worst_month), company=company)} negative in worst month",
             "current_exposure": abs(negative_months.avg_flow) if negative_months.avg_flow < 0 else 0,
             "trend": "Increasing",
             "mitigation_urgency": "Immediate" if severity == "Critical" else "High",
@@ -525,7 +527,7 @@ def assess_credit_risk(company=None):
             "severity": severity,
             "probability": 100 - confidence,
             "impact": "Medium",
-            "description": f"Potential bad debt exposure of ₹{estimated_bad_debt:,.2f}",
+            "description": f"Potential bad debt exposure of {format_currency(estimated_bad_debt, company=company)}",
             "current_exposure": estimated_bad_debt,
             "trend": "Stable",
             "mitigation_urgency": "Medium",

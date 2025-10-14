@@ -4,11 +4,13 @@
 import frappe
 from frappe.model.document import Document
 from frappe.utils import nowdate, now, add_days, getdate, flt, cint
+from ai_inventory.utils.currency_utils import get_report_currency, format_currency
 import json
 from datetime import datetime, timedelta
 from typing import Dict, List, Tuple, Optional
 import time
 import threading
+
 
 # Safe imports for ML packages - only import when actually needed
 def safe_import_ml_packages():
@@ -625,7 +627,7 @@ class AIInventoryForecast(Document):
                     confidence = price_result.get('confidence', 0)
                     
                     if predicted_price > 0:
-                        price_note = f"\n\n💰 ML Price Prediction: ₹{predicted_price:.2f} (Confidence: {confidence}%)"
+                        price_note = f"\n\n💰 ML Price Prediction: {format_currency(predicted_price, company=self.company)} (Confidence: {confidence}%)"
                         self.forecast_details = (self.forecast_details or "") + price_note
             except ImportError:
                 # ML analyzer not available, skip price prediction

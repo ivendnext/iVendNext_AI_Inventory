@@ -1,6 +1,7 @@
 # revenue_trend_analysis_report.py
 import frappe
 from frappe import _
+from ai_inventory.utils.currency_utils import get_report_currency, format_currency
 import json
 from datetime import datetime, timedelta
 import statistics
@@ -943,8 +944,12 @@ def export_revenue_to_pdf(data):
         frappe.log_error(f"Revenue PDF export error: {str(e)}")
         return {"success": False, "error": str(e)}
 
+
 def generate_revenue_html_report(data):
     """Generate HTML version of revenue trend analysis"""
+    
+    # Get the currency for this report
+    report_currency = get_report_currency(data.get('company'))
     
     growth_color = "success" if data["summary"]["revenue_growth_rate"] > 0 else "danger"
     
@@ -981,7 +986,7 @@ def generate_revenue_html_report(data):
         
         <div class="metric-grid">
             <div class="metric-card">
-                <h3>₹{data['summary']['current_monthly_revenue']:,.0f}</h3>
+                <h3>{format_currency(data['summary']['current_monthly_revenue'], currency=report_currency)}</h3>
                 <p>Current Monthly Revenue</p>
             </div>
             <div class="metric-card">

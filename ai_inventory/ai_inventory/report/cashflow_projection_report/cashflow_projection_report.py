@@ -1,9 +1,9 @@
 # cashflow_projection_report.py
 import frappe
 from frappe import _
-import json
-from datetime import datetime, timedelta
+from ai_inventory.utils.currency_utils import get_report_currency, format_currency
 import calendar
+
 
 def execute(filters=None):
     """
@@ -310,7 +310,7 @@ def get_current_balance(company=None):
     return {
         "total_balance": total_balance,
         "account_breakdown": account_details,
-        "currency": frappe.defaults.get_global_default("currency") or "INR"
+        "currency": get_report_currency(company)
     }
 
 def get_monthly_projections(company=None, months_ahead=12, from_date=None, to_date=None):
@@ -806,7 +806,7 @@ def export_to_excel(data):
     
     try:
         from openpyxl import Workbook
-        from openpyxl.styles import Font, PatternFill, Alignment
+        from openpyxl.styles import Font, PatternFill
         
         wb = Workbook()
         
@@ -950,6 +950,9 @@ def export_to_pdf(data):
 def generate_cashflow_html_report(data):
     """Generate HTML version of cash flow report"""
     
+    # Get the currency for this report
+    report_currency = data.get('current_position', {}).get('current_balance', {}).get('currency', 'INR')
+    
     html = f"""
     <!DOCTYPE html>
     <html>
@@ -977,22 +980,23 @@ def generate_cashflow_html_report(data):
             <p><strong>Company:</strong> {data['company']}</p>
             <p><strong>Generated:</strong> {data['generated_at']}</p>
             <p><strong>Projection Period:</strong> {data['projection_period']}</p>
+            <p><strong>Currency:</strong> {report_currency}</p>
         </div>
         
         <div class="section">
             <h2>Executive Summary</h2>
             <div class="metric-card">
-                <h3>₹{data['current_position']['current_balance']['total_balance']:,.2f}</h3>
+                <h3>{format_currency(data['current_position']['current_balance']['total_balance'], currency=report_currency)}</h3>
                 <p>Current Balance</p>
             </div>
             <div class="metric-card">
                 <h3 class="{'positive' if data['key_metrics']['net_cashflow_projection'] > 0 else 'negative'}">
-                    ₹{data['key_metrics']['net_cashflow_projection']:,.2f}
+                    {format_currency(data['key_metrics']['net_cashflow_projection'], currency=report_currency)}
                 </h3>
                 <p>Net Cash Flow (Projected)</p>
             </div>
             <div class="metric-card">
-                <h3>₹{data['key_metrics']['avg_monthly_cashflow']:,.2f}</h3>
+                <h3>{format_currency(data['key_metrics']['avg_monthly_cashflow'], currency=report_currency)}</h3>
                 <p>Average Monthly Cash Flow</p>
             </div>
             <div class="metric-card">
@@ -1024,10 +1028,10 @@ def generate_cashflow_html_report(data):
         html += f"""
                     <tr>
                         <td>{projection['month']}</td>
-                        <td>₹{projection['revenue']['amount']:,.2f}</td>
-                        <td>₹{projection['expenses']['amount']:,.2f}</td>
-                        <td class="{net_class}">₹{projection['net_cashflow']['amount']:,.2f}</td>
-                        <td>₹{projection['cumulative_cashflow']:,.2f}</td>
+                        <td>{format_currency(projection['revenue']['amount'], currency=report_currency)}</td>
+                        <td>{format_currency(projection['expenses']['amount'], currency=report_currency)}</td>
+                        <td class="{net_class}">{format_currency(projection['net_cashflow']['amount'], currency=report_currency)}</td>
+                        <td>{format_currency(projection['cumulative_cashflow'], currency=report_currency)}</td>
                         <td>{projection['net_cashflow']['confidence']:.1f}%</td>
                     </tr>
         """

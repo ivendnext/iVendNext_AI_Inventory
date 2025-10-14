@@ -14,6 +14,7 @@ This script implements all the validation points from your comprehensive checkli
 import frappe
 import json
 from datetime import datetime, timedelta
+from ai_inventory.utils.currency_utils import get_report_currency, format_currency
 
 class ValidationChecklistImplementation:
     """Implementation of the comprehensive validation checklist"""
@@ -97,13 +98,13 @@ class ValidationChecklistImplementation:
                 
                 if forecast_balance:
                     difference = abs(actual_balance - forecast_balance)
-                    tolerance = 1.0  # ₹1 tolerance as per checklist
+                    tolerance = 1.0  # Currency tolerance as per checklist
                     
                     if difference <= tolerance:
-                        return {"status": "PASS", "message": f"Balance accurate (₹{difference:.2f} diff)", "difference": difference}
+                        return {"status": "PASS", "message": f"Balance accurate ({format_currency(difference)} diff)", "difference": difference}
                     else:
-                        self.critical_issues.append(f"Balance variance: ₹{difference:,.2f} (exceeds ₹{tolerance} tolerance)")
-                        return {"status": "FAIL", "message": f"Balance variance: ₹{difference:,.2f}", "difference": difference}
+                        self.critical_issues.append(f"Balance variance: {format_currency(difference)} (exceeds {format_currency(tolerance)} tolerance)")
+                        return {"status": "FAIL", "message": f"Balance variance: {format_currency(difference)}", "difference": difference}
                 
             return {"status": "SKIP", "message": "No balance data to verify"}
             
@@ -138,7 +139,7 @@ class ValidationChecklistImplementation:
             
             if forecast.upper_bound and forecast.lower_bound:
                 if forecast.upper_bound <= forecast.lower_bound:
-                    error_msg = f"Upper bound (₹{forecast.upper_bound:,.2f}) ≤ Lower bound (₹{forecast.lower_bound:,.2f})"
+                    error_msg = f"Upper bound ({format_currency(forecast.upper_bound, company=forecast.company)}) ≤ Lower bound ({format_currency(forecast.lower_bound, company=forecast.company)})"
                     self.critical_issues.append(f"CRITICAL BOUNDS ERROR: {error_msg}")
                     return {"status": "FAIL", "message": error_msg, "upper": forecast.upper_bound, "lower": forecast.lower_bound}
                 else:
