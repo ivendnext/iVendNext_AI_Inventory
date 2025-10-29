@@ -10,6 +10,8 @@ mentioned in your validation checklist.
 import frappe
 import json
 from datetime import datetime
+from ai_inventory.utils.currency_utils import get_report_currency, format_currency
+
 
 def quick_balance_check():
     """Quick balance check for AI-FIN-FCST-01319"""
@@ -27,7 +29,7 @@ def quick_balance_check():
         print(f"   Company: {forecast.company}")
         print(f"   Account: {forecast.account}")
         print(f"   Type: {forecast.forecast_type}")
-        print(f"   Predicted Amount: ₹{forecast.predicted_amount:,.2f}")
+        print(f"   Predicted Amount: {format_currency(forecast.predicted_amount, company=forecast.company)}")
         print(f"   Confidence: {forecast.confidence_score}%")
         
         # Check current balance
@@ -53,14 +55,14 @@ def quick_balance_check():
         gl_result = frappe.db.sql(gl_balance_query, (forecast.account,), as_dict=True)[0]
         calculated_balance = gl_result["balance"]
         
-        print(f"   Calculated Balance (GL): ₹{calculated_balance:,.2f}")
+        print(f"   Calculated Balance (GL): {format_currency(calculated_balance, company=forecast.company)}")
         print(f"   GL Entries Count: {gl_result['entries']}")
         print(f"   Last Transaction: {gl_result['last_date']}")
         
         # Check if forecast has current_balance field
         current_balance = getattr(forecast, 'current_balance', None)
         if current_balance:
-            print(f"   Stored Balance: ₹{current_balance:,.2f}")
+            print(f"   Stored Balance: {format_currency(current_balance, company=forecast.company)}")
             balance_as_of = getattr(forecast, 'balance_as_of_date', None)
             if balance_as_of:
                 print(f"   Balance As Of: {balance_as_of}")
@@ -77,7 +79,7 @@ def quick_balance_check():
             variance = primary_balance - forecast.predicted_amount
             variance_pct = (variance / abs(forecast.predicted_amount)) * 100 if forecast.predicted_amount != 0 else 0
             
-            print(f"   Absolute Variance: ₹{variance:,.2f}")
+            print(f"   Absolute Variance: {format_currency(variance, company=forecast.company)}")
             print(f"   Percentage Variance: {variance_pct:.1f}%")
             
             # Categorize variance
@@ -100,8 +102,8 @@ def quick_balance_check():
         if forecast.upper_bound and forecast.lower_bound:
             if forecast.upper_bound > forecast.lower_bound:
                 print(f"   ✅ Bounds Logic: VALID")
-                print(f"   Upper Bound: ₹{forecast.upper_bound:,.2f}")
-                print(f"   Lower Bound: ₹{forecast.lower_bound:,.2f}")
+                print(f"   Upper Bound: {format_currency(forecast.upper_bound, company=forecast.company)}")
+                print(f"   Lower Bound: {format_currency(forecast.lower_bound, company=forecast.company)}")
                 
                 # Check if current balance falls within bounds
                 if forecast.lower_bound <= primary_balance <= forecast.upper_bound:
@@ -110,8 +112,8 @@ def quick_balance_check():
                     print(f"   ⚠️ Current balance outside bounds")
             else:
                 print(f"   🚨 Bounds Logic: INVALID (Upper ≤ Lower)")
-                print(f"   Upper Bound: ₹{forecast.upper_bound:,.2f}")
-                print(f"   Lower Bound: ₹{forecast.lower_bound:,.2f}")
+                print(f"   Upper Bound: {format_currency(forecast.upper_bound, company=forecast.company)}")
+                print(f"   Lower Bound: {format_currency(forecast.lower_bound, company=forecast.company)}")
         else:
             print(f"   ⚠️ Bounds not set")
         
@@ -167,8 +169,8 @@ def quick_balance_check():
         # Summary
         print(f"\n📝 Summary:")
         print(f"   Forecast ID: {forecast_id}")
-        print(f"   Current Balance: ₹{primary_balance:,.2f}")
-        print(f"   Predicted Amount: ₹{forecast.predicted_amount:,.2f}")
+        print(f"   Current Balance: {format_currency(primary_balance, company=forecast.company)}")
+        print(f"   Predicted Amount: {format_currency(forecast.predicted_amount, company=forecast.company)}")
         print(f"   Confidence Score: {forecast.confidence_score}%")
         if forecast.predicted_amount:
             print(f"   Accuracy: {variance_status}")
@@ -202,7 +204,7 @@ def update_forecast_balance():
             
             if result.get("success"):
                 forecast.save()
-                print(f"✅ Balance updated: ₹{result['balance']:,.2f}")
+                print(f"✅ Balance updated: {format_currency(result['balance'])}")
                 return result
             else:
                 print(f"❌ Balance update failed: {result.get('message', 'Unknown error')}")

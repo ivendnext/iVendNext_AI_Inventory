@@ -5,6 +5,7 @@ import frappe
 from frappe.model.document import Document
 from frappe import _
 from datetime import datetime
+from ai_inventory.utils.currency_utils import format_currency
 
 
 class AIFinancialAlert(Document):
@@ -55,8 +56,8 @@ class AIFinancialAlert(Document):
                     <p><strong>Alert Type:</strong> {self.alert_type}</p>
                     <p><strong>Message:</strong> {self.alert_message}</p>
                     <p><strong>Date:</strong> {self.alert_date}</p>
-                    {f'<p><strong>Threshold Value:</strong> ₹{self.threshold_value:,.2f}</p>' if self.threshold_value else ''}
-                    {f'<p><strong>Actual Value:</strong> ₹{self.actual_value:,.2f}</p>' if self.actual_value else ''}
+                    {f'<p><strong>Threshold Value:</strong> {format_currency(self.threshold_value, company=self.company)}</p>' if self.threshold_value else ''}
+                    {f'<p><strong>Actual Value:</strong> {format_currency(self.actual_value, company=self.company)}</p>' if self.actual_value else ''}
                     <p><strong>Recommended Action:</strong> {self.recommended_action or 'Review required'}</p>
                     """
                     )

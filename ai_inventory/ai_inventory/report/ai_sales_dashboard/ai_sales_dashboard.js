@@ -1037,7 +1037,7 @@ function enhance_report_layout(report) {
 }
 
 function format_currency(amount) {
-    if (!amount || amount === 0) return '₹0';
+    if (!amount || amount === 0) return format_currency_js(0);
     
     try {
         // Use Indian formatting as default, fallback to system settings
@@ -1052,7 +1052,7 @@ function format_currency(amount) {
         }).format(amount);
     } catch (e) {
         // Fallback formatting
-        return '₹' + amount.toLocaleString();
+        return format_currency_js(amount);
     }
 }
 

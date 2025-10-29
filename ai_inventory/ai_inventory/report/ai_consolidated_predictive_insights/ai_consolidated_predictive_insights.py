@@ -4,10 +4,12 @@
 import frappe
 from frappe.utils import flt, nowdate, add_days, getdate, cint, now_datetime, date_diff
 from frappe import _
+from ai_inventory.utils.currency_utils import get_report_currency, format_currency
 import json
 from datetime import datetime, timedelta
 from collections import defaultdict
 import math
+
 
 # Advanced data science imports with fallbacks
 try:
@@ -1160,7 +1162,7 @@ def get_ai_powered_summary(filters):
                 "indicator": "Red" if cint(inv_s.get('reorder_items', 0)) > 0 else "Green"
             },
             {
-                "value": "₹0",
+                "value": format_currency(0, company=company),
                 "label": "Total Revenue Potential",
                 "datatype": "Data",
                 "indicator": "Blue"
@@ -1267,7 +1269,7 @@ def analyze_predictive_patterns(data):
             insights.append({
                 "type": "opportunity",
                 "title": "Revenue Opportunities",
-                "message": f"₹{total_revenue:,.0f} potential from {len(high_revenue_items)} items",
+                "message": f"{format_currency(total_revenue, company=company)} potential from {len(high_revenue_items)} items",
                 "count": len(high_revenue_items),
                 "severity": "medium"
             })
@@ -1518,12 +1520,12 @@ def revenue_opportunities(filters=None):
                     "market_potential": flt(item.get('market_potential', 0)),
                     "customer_score": flt(item.get('customer_score', 0)),
                     "current_stock": flt(item.get('current_stock', 0)),
-                    "action_required": f"Focus on sales - potential ₹{flt(item.get('revenue_potential', 0)):,.0f}",
+                    "action_required": f"Focus on sales - potential {format_currency(flt(item.get('revenue_potential', 0)), company=company)}",
                     "status": "High Opportunity" if flt(item.get('opportunity_score', 0)) > 80 else "Good Opportunity"
                 }
                 for item in opportunities[:15]
             ],
-            "recommendation": f"Identified {len(opportunities)} revenue opportunities worth ₹{total_revenue:,.0f} with potential profit of ₹{total_profit:,.0f}",
+            "recommendation": f"Identified {len(opportunities)} revenue opportunities worth {format_currency(total_revenue, company=company)} with potential profit of {format_currency(total_profit, company=company)}",
             "summary": {
                 "high_value_items": len([i for i in opportunities if flt(i.get('revenue_potential', 0)) > 20000]),
                 "total_potential_revenue": round(total_revenue, 2),
@@ -1915,7 +1917,7 @@ def create_ai_purchase_order(items_data=None, filters=None):
             "total_amount": round(total_amount, 2),
             "items_count": len(po_doc.items),
             "items": po_items_details,
-            "recommendation": f"Successfully created Purchase Order {po_doc.name} for {len(po_doc.items)} items worth ₹{total_amount:,.2f}",
+            "recommendation": f"Successfully created Purchase Order {po_doc.name} for {len(po_doc.items)} items worth {format_currency(total_amount, company=company)}",
             "po_link": f"/app/purchase-order/{po_doc.name}",
             "next_steps": [
                 f"📋 Review Purchase Order: {po_doc.name}",
@@ -1927,7 +1929,7 @@ def create_ai_purchase_order(items_data=None, filters=None):
             ],
             "insights": [
                 f"📄 Purchase Order: {po_doc.name}",
-                f"💰 Total Value: ₹{total_amount:,.2f}",
+                f"💰 Total Value: {format_currency(total_amount, company=company)}",
                 f"📦 Items: {len(po_doc.items)}",
                 f"📅 Expected Delivery: {po_doc.schedule_date}",
                 f"🏪 Supplier: {po_doc.supplier}"
@@ -2385,14 +2387,14 @@ def preview_ai_purchase_order(filters=None):
             },
             "insights": [
                 f"📦 {items_count} out of {total_items_analyzed} items need reordering",
-                f"💰 Total estimated cost: ₹{total_amount:,.2f}",
+                f"💰 Total estimated cost: {format_currency(total_amount, company=company)}",
                 f"🚨 {len([i for i in preview_items if i['urgency_score'] > 80])} critical items need immediate attention",
                 f"📊 Average urgency score: {sum(i['urgency_score'] for i in preview_items) / max(items_count, 1):.1f}%",
                 f"🏪 Primary supplier: {supplier_summary.get('primary_supplier', 'Multiple suppliers')}",
                 "🤖 AI has optimized quantities and supplier selection based on historical data"
             ],
             "supplier_options": get_all_supplier_options(),
-            "recommendation": f"Purchase Order preview ready for {items_count} items worth ₹{total_amount:,.2f}. Review quantities and suppliers before creating the order."
+            "recommendation": f"Purchase Order preview ready for {items_count} items worth {format_currency(total_amount, company=company)}. Review quantities and suppliers before creating the order."
         }
         
     except Exception as e:
@@ -2466,7 +2468,7 @@ def create_ai_purchase_order_from_preview(items_data=None, preview_data=None):
                 ],
                 "insights": [
                     f"📄 Purchase Order: {po_result['po_number']}",
-                    f"💰 Total Value: ₹{total_amount:,.2f}",
+                    f"💰 Total Value: {format_currency(total_amount, company=company)}",
                     f"📦 Items: {total_items}",
                     f"🏪 Supplier: {po_result['supplier']}"
                 ]
@@ -2492,7 +2494,7 @@ def create_ai_purchase_order_from_preview(items_data=None, preview_data=None):
                 ],
                 "insights": [
                     f"📄 Purchase Orders: {', '.join(po_numbers)}",
-                    f"💰 Total Value: ₹{total_amount:,.2f}",
+                    f"💰 Total Value: {format_currency(total_amount, company=company)}",
                     f"📦 Total Items: {total_items}",
                     f"🏪 Suppliers: {len(created_pos)} different suppliers"
                 ]
@@ -2751,7 +2753,7 @@ def perform_quick_reorder_analysis(filters=None):
                 "Monitor delivery timelines"
             ],
             "insights": [
-                f"💰 Total reorder value: ₹{total_value:,.2f}",
+                f"💰 Total reorder value: {format_currency(total_value, company=company)}",
                 f"🚨 {len(critical_items)} items need immediate attention",
                 f"📊 {len(reorder_items)} items require standard reordering",
                 f"⏱️ Average days to stockout: {sum(item.get('days_to_stockout', 0) for item in critical_items + reorder_items) / max(len(critical_items + reorder_items), 1):.1f}"
@@ -2816,7 +2818,7 @@ def identify_revenue_opportunities(filters=None):
         return {
             "success": True,
             "title": "💰 Revenue Opportunities",
-            "summary": f"Identified {len(opportunities)} revenue opportunities worth ₹{total_potential:,.2f}",
+            "summary": f"Identified {len(opportunities)} revenue opportunities worth {format_currency(total_potential, company=company)}",
             "opportunities": opportunities[:20],  # Top 20 opportunities
             "total_potential": round(total_potential, 2),
             "categories": {
@@ -2832,9 +2834,9 @@ def identify_revenue_opportunities(filters=None):
                 "Develop marketing campaigns"
             ],
             "insights": [
-                f"🎯 Top opportunity: ₹{opportunities[0]['total_opportunity']:,.2f}" if opportunities else "No major opportunities found",
-                f"📈 Market expansion potential: ₹{sum(op['market_expansion'] for op in opportunities):,.2f}",
-                f"💡 Price optimization potential: ₹{sum(op['price_optimization'] for op in opportunities):,.2f}",
+                f"🎯 Top opportunity: {format_currency(opportunities[0]['total_opportunity'], company=company)}" if opportunities else "No major opportunities found",
+                f"📈 Market expansion potential: {format_currency(sum(op['market_expansion'] for op in opportunities), company=company)}",
+                f"💡 Price optimization potential: {format_currency(sum(op['price_optimization'] for op in opportunities), company=company)}",
                 f"⭐ Average confidence: {sum(op['confidence'] for op in opportunities) / max(len(opportunities), 1):.1f}%"
             ]
         }
@@ -2952,7 +2954,7 @@ def assess_risk_factors(filters=None):
             ],
             "insights": [
                 f"🚨 {len(critical_risks)} items require immediate attention",
-                f"💰 Total value at risk: ₹{total_risk_value:,.2f}",
+                f"💰 Total value at risk: {format_currency(total_risk_value, company=company)}",
                 f"📊 Average risk score: {sum(r['risk_score'] for r in risks) / max(len(risks), 1):.1f}",
                 f"⏰ {len([r for r in risks if r['urgency'] == 'Immediate'])} items need immediate action"
             ]

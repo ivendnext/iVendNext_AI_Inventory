@@ -6,9 +6,8 @@
 import frappe
 from frappe import _
 import random
-import json
 from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Union
 
 def create_financial_forecast(
     company: str, 
@@ -34,7 +33,9 @@ def create_financial_forecast(
     # Validate forecast type
     valid_types = ["Cash Flow", "Revenue", "Expense", "Balance Sheet", "P&L"]
     if forecast_type not in valid_types:
-        raise ValueError(f"Forecast Type cannot be \"{forecast_type}\". It should be one of {', '.join(f'\"{t}\"' for t in valid_types)}")
+        # Use string concatenation to avoid backslash in f-string
+        valid_types_str = ', '.join([f'"{t}"' for t in valid_types])
+        raise ValueError(f'Forecast Type cannot be "{forecast_type}". It should be one of {valid_types_str}')
     
     try:
         # Get account details
@@ -152,7 +153,7 @@ def _generate_ai_prediction(account_doc, forecast_type: str) -> float:
     
     return round(base_amount * modifier, 2)
 
-def _calculate_confidence_score(account_doc, forecast_type: str, threshold: float) -> float:
+def _calculate_confidence_score(account_doc, forecast_type: str, _threshold: float) -> float:
     """Calculate AI confidence score"""
     
     # Base confidence by forecast type
@@ -181,7 +182,7 @@ def _calculate_confidence_score(account_doc, forecast_type: str, threshold: floa
     
     return round(confidence, 1)
 
-def _get_current_balance(account: str) -> float:
+def _get_current_balance(_account: str) -> float:
     """Get current account balance"""
     try:
         # Simplified balance retrieval

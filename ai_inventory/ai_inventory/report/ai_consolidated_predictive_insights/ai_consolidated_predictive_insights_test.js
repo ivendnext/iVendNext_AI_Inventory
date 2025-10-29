@@ -337,7 +337,7 @@ function show_quick_recorder_analysis(report) {
                                                 <h5>📊 Summary</h5>
                                                 <p><strong>Total Items:</strong> ${summary.total_items}</p>
                                                 <p><strong>High Priority:</strong> ${summary.high_priority}</p>
-                                                <p><strong>Revenue Potential:</strong> ₹${(summary.total_revenue_potential || 0).toLocaleString()}</p>
+                                                <p><strong>Revenue Potential:</strong> ${format_currency_js(summary.total_revenue_potential || 0)}</p>
                                             </div>
                                         </div>
                                         <div class="col-md-8">
@@ -359,7 +359,7 @@ function show_quick_recorder_analysis(report) {
                                                             <td>${item.predicted_qty}</td>
                                                             <td>${item.confidence_score}%</td>
                                                             <td><span class="indicator ${item.priority === 'High Priority' ? 'red' : item.priority === 'Medium Priority' ? 'orange' : 'green'}">${item.priority}</span></td>
-                                                            <td>₹${(item.revenue_potential || 0).toLocaleString()}</td>
+                                                            <td>${format_currency_js(item.revenue_potential || 0)}</td>
                                                         </tr>
                                                     `).join('')}
                                                 </tbody>
@@ -409,7 +409,7 @@ function show_revenue_opportunities(report) {
                                                 <h5>💼 Summary</h5>
                                                 <p><strong>Total Opportunities:</strong> ${summary.total_opportunities}</p>
                                                 <p><strong>High Value Items:</strong> ${summary.high_value_count}</p>
-                                                <p><strong>Total Potential:</strong> ₹${(summary.total_potential || 0).toLocaleString()}</p>
+                                                <p><strong>Total Potential:</strong> ${format_currency_js(summary.total_potential || 0)}</p>
                                             </div>
                                         </div>
                                         <div class="col-md-9">
@@ -430,7 +430,7 @@ function show_revenue_opportunities(report) {
                                                         <tr>
                                                             <td>${item.item_code}</td>
                                                             <td>${item.customer || 'All Customers'}</td>
-                                                            <td><strong>₹${(item.revenue_potential || 0).toLocaleString()}</strong></td>
+                                                            <td><strong>${format_currency_js(item.revenue_potential || 0)}</strong></td>
                                                             <td>${item.predicted_qty}</td>
                                                             <td>${item.cross_sell_score}</td>
                                                             <td><span class="indicator ${item.opportunity_level === 'High Value' ? 'green' : item.opportunity_level === 'Medium Value' ? 'orange' : 'gray'}">${item.opportunity_level}</span></td>

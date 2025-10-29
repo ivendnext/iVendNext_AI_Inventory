@@ -293,43 +293,12 @@ function show_scenario_dialog(scenario_data) {
 }
 
 function format_currency(value) {
-    if (!value) return "₹0.00";
-    
     // Get company from current report filters
-    let report = frappe.query_report;
+    let report = frappe.query_report || cur_report_obj;
     let company = report ? report.get_values().company : null;
     
-    // Get company-specific currency or fallback to system default
-    var currency = "INR"; // Default to INR
-    if (company && frappe.get_doc && frappe.get_doc("Company", company)) {
-        currency = frappe.get_doc("Company", company).default_currency || "INR";
-    } else {
-        currency = frappe.defaults.get_default("currency") || frappe.boot.sysdefaults.currency || "INR";
-    }
-    
-    // Format based on currency
-    if (currency === "INR") {
-        // Indian Rupee formatting with ₹ symbol
-        return new Intl.NumberFormat('en-IN', {
-            style: 'currency',
-            currency: 'INR',
-            minimumFractionDigits: 2
-        }).format(value);
-    } else if (currency === "USD") {
-        // US Dollar formatting
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: 'USD',
-            minimumFractionDigits: 2
-        }).format(value);
-    } else {
-        // Generic formatting for other currencies
-        return new Intl.NumberFormat('en-US', {
-            style: 'currency',
-            currency: currency,
-            minimumFractionDigits: 2
-        }).format(value);
-    }
+    // Use the global currency utility function
+    return format_currency_js(value, get_report_currency(company));
 }
 
 function show_dashboard_dialog(chart_data) {

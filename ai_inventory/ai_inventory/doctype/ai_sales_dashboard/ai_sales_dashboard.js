@@ -297,11 +297,11 @@ function show_sales_analytics_summary(frm) {
                     <table class="table table-bordered">
                         <tr>
                             <td><strong>Total Revenue Forecast:</strong></td>
-                            <td style="color: green; font-weight: bold;">₹${(analytics.total_revenue_forecast || 0).toLocaleString()}</td>
+                            <td style="color: green; font-weight: bold;">${format_currency_js(analytics.total_revenue_forecast || 0)}</td>
                         </tr>
                         <tr>
                             <td><strong>High-Confidence Revenue:</strong></td>
-                            <td style="color: blue;">₹${(analytics.high_confidence_revenue || 0).toLocaleString()}</td>
+                            <td style="color: blue;">${format_currency_js(analytics.high_confidence_revenue || 0)}</td>
                         </tr>
                         <tr>
                             <td><strong>Top Performing Items:</strong></td>
@@ -743,7 +743,7 @@ function create_bulk_purchase_orders_from_ai(frm) {
                                 </tr>
                                 <tr>
                                     <td><strong>Total Value:</strong></td>
-                                    <td style="color: blue;">₹${(result.total_value || 0).toLocaleString()}</td>
+                                    <td style="color: blue;">${format_currency_js(result.total_value || 0)}</td>
                                 </tr>
                                 <tr>
                                     <td><strong>Failed Items:</strong></td>
@@ -798,7 +798,7 @@ function create_bulk_purchase_orders_from_ai(frm) {
                                         <td><a href="/app/purchase-order/${po.name}" target="_blank">${po.name}</a></td>
                                         <td>${po.supplier}</td>
                                         <td>${po.total_qty}</td>
-                                        <td>₹${po.total_amount?.toLocaleString()}</td>
+                                        <td>${format_currency_js(po.total_amount || 0)}</td>
                                         <td><span class="badge badge-${po.ai_confidence > 80 ? 'success' : po.ai_confidence > 60 ? 'warning' : 'danger'}">${po.ai_confidence}%</span></td>
                                     </tr>
                                 `;
@@ -943,7 +943,7 @@ function show_purchase_order_ai_insights(frm) {
                                     <tr>
                                         <td><strong>${supplier}</strong></td>
                                         <td>${analysis.item_count}</td>
-                                        <td>₹${(analysis.total_value || 0).toLocaleString()}</td>
+                                        <td>${format_currency_js(analysis.total_value || 0)}</td>
                                         <td><span class="badge badge-${analysis.avg_confidence > 80 ? 'success' : analysis.avg_confidence > 60 ? 'warning' : 'danger'}">${analysis.avg_confidence}%</span></td>
                                         <td style="color: ${analysis.urgent_items > 0 ? 'red' : 'green'};">${analysis.urgent_items}</td>
                                     </tr>

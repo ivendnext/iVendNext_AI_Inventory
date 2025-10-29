@@ -4,8 +4,8 @@ AI Financial Forecast Emergency Fix Script
 Addresses the critical bounds issue identified in AI-FIN-FCST-01319
 
 CRITICAL ISSUE CONFIRMED:
-- Upper Bound: ₹152,231.96
-- Lower Bound: ₹154,663.20
+- Upper Bound: 152,231.96 (currency formatting applied dynamically)
+- Lower Bound: 154,663.20 (currency formatting applied dynamically)
 - ERROR: Upper bound < Lower bound (violates basic logic)
 
 Usage:
@@ -17,6 +17,7 @@ Usage:
 import frappe
 import json
 from datetime import datetime
+from ai_inventory.utils.currency_utils import get_report_currency, format_currency
 
 class EmergencyForecastFix:
     """Emergency fix for critical forecast validation issues"""
@@ -97,7 +98,7 @@ class EmergencyForecastFix:
         if forecast.upper_bound <= forecast.lower_bound:
             severity = "CRITICAL"
             difference = forecast.lower_bound - forecast.upper_bound
-            issues.append(f"Upper bound (₹{forecast.upper_bound:,.2f}) ≤ Lower bound (₹{forecast.lower_bound:,.2f}). Difference: ₹{difference:,.2f}")
+            issues.append(f"Upper bound ({format_currency(forecast.upper_bound, company=forecast.company)}) ≤ Lower bound ({format_currency(forecast.lower_bound, company=forecast.company)}). Difference: {format_currency(difference, company=forecast.company)}")
             
             self.issues_found.append({
                 "forecast_id": forecast.name,
@@ -106,7 +107,7 @@ class EmergencyForecastFix:
                 "upper_bound": forecast.upper_bound,
                 "lower_bound": forecast.lower_bound,
                 "difference": difference,
-                "message": f"Bounds calculation error - upper < lower by ₹{difference:,.2f}"
+                "message": f"Bounds calculation error - upper < lower by {format_currency(difference, company=getattr(forecast, 'company', None))}"
             })
         
         # Check prediction vs bounds relationship
@@ -114,7 +115,7 @@ class EmergencyForecastFix:
             if forecast.predicted_amount < forecast.lower_bound or forecast.predicted_amount > forecast.upper_bound:
                 if severity != "CRITICAL":
                     severity = "WARNING"
-                issues.append(f"Prediction (₹{forecast.predicted_amount:,.2f}) outside bounds range")
+                issues.append(f"Prediction ({format_currency(forecast.predicted_amount, company=getattr(forecast, 'company', None))}) outside bounds range")
         
         # Check confidence score
         if forecast.confidence_score and forecast.confidence_score < 50:
@@ -150,8 +151,8 @@ class EmergencyForecastFix:
             if forecast.upper_bound and forecast.lower_bound:
                 if forecast.upper_bound <= forecast.lower_bound:
                     print(f"   🚨 Found bounds error:")
-                    print(f"      Current Upper: ₹{forecast.upper_bound:,.2f}")
-                    print(f"      Current Lower: ₹{forecast.lower_bound:,.2f}")
+                    print(f"      Current Upper: {format_currency(forecast.upper_bound, company=forecast.company)}")
+                    print(f"      Current Lower: {format_currency(forecast.lower_bound, company=forecast.company)}")
                     
                     # Swap the values
                     original_upper = forecast.upper_bound
@@ -161,8 +162,8 @@ class EmergencyForecastFix:
                     forecast.lower_bound = original_upper
                     
                     print(f"   ✅ Corrected bounds:")
-                    print(f"      New Upper: ₹{forecast.upper_bound:,.2f}")
-                    print(f"      New Lower: ₹{forecast.lower_bound:,.2f}")
+                    print(f"      New Upper: {format_currency(forecast.upper_bound, company=forecast.company)}")
+                    print(f"      New Lower: {format_currency(forecast.lower_bound, company=forecast.company)}")
                     
                     fixes_applied.append("swapped_bounds")
             
@@ -329,7 +330,7 @@ class EmergencyForecastFix:
             else:
                 print(f"⚠️ WARNING: {len(remaining_issues)} bounds issues still remain:")
                 for issue in remaining_issues:
-                    print(f"   - {issue.name}: Upper=₹{issue.upper_bound:,.2f}, Lower=₹{issue.lower_bound:,.2f}")
+                    print(f"   - {issue.name}: Upper={format_currency(issue.upper_bound)}, Lower={format_currency(issue.lower_bound)}")
                 return False
                 
         except Exception as e:
@@ -377,17 +378,17 @@ def check_ai_fin_fcst_01319():
         print()
         
         print("📊 Current Values:")
-        print(f"   Predicted Amount: ₹{forecast.predicted_amount:,.2f}")
-        print(f"   Upper Bound: ₹{forecast.upper_bound:,.2f}")
-        print(f"   Lower Bound: ₹{forecast.lower_bound:,.2f}")
+        print(f"   Predicted Amount: {format_currency(forecast.predicted_amount, company=forecast.company)}")
+        print(f"   Upper Bound: {format_currency(forecast.upper_bound, company=forecast.company)}")
+        print(f"   Lower Bound: {format_currency(forecast.lower_bound, company=forecast.company)}")
         print(f"   Confidence: {forecast.confidence_score}%")
         print()
         
         # Check the specific issue
         if forecast.upper_bound <= forecast.lower_bound:
             print("🚨 CONFIRMED: Critical bounds issue exists!")
-            print(f"   Upper (₹{forecast.upper_bound:,.2f}) ≤ Lower (₹{forecast.lower_bound:,.2f})")
-            print(f"   Error margin: ₹{forecast.lower_bound - forecast.upper_bound:,.2f}")
+            print(f"   Upper ({format_currency(forecast.upper_bound, company=forecast.company)}) ≤ Lower ({format_currency(forecast.lower_bound, company=forecast.company)})")
+            print(f"   Error margin: {format_currency(forecast.lower_bound - forecast.upper_bound, company=forecast.company)}")
             print()
             print("💡 Ready to fix? Run: fix_specific_forecast('AI-FIN-FCST-01319')")
         else:

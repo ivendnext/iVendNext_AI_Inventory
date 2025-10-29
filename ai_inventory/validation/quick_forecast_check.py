@@ -13,6 +13,7 @@ bench --site your-site-name execute ai_inventory.validation.quick_forecast_check
 import frappe
 import json
 from datetime import datetime
+from ai_inventory.utils.currency_utils import get_report_currency, format_currency
 
 def run_critical_validation():
     """Run critical validation checks for all AI Financial Forecasts"""
@@ -129,7 +130,7 @@ def check_forecast_bounds_logic(forecast):
             "forecast_id": forecast_id,
             "check": "bounds_logic",
             "status": "CRITICAL",
-            "message": f"Upper bound (₹{upper_bound:,.2f}) ≤ Lower bound (₹{lower_bound:,.2f}) - CALCULATION ERROR!",
+            "message": f"Upper bound ({format_currency(upper_bound)}) ≤ Lower bound ({format_currency(lower_bound)}) - CALCULATION ERROR!",
             "details": {
                 "upper_bound": upper_bound,
                 "lower_bound": lower_bound,
@@ -159,7 +160,7 @@ def check_forecast_bounds_logic(forecast):
         "forecast_id": forecast_id,
         "check": "bounds_logic",
         "status": "PASSED",
-        "message": f"Bounds are valid (₹{lower_bound:,.2f} < ₹{upper_bound:,.2f})"
+        "message": f"Bounds are valid ({format_currency(lower_bound)} < {format_currency(upper_bound)})"
     }
 
 def check_data_quality(forecast):
@@ -317,16 +318,16 @@ def check_specific_forecast(forecast_id):
         # Check bounds
         print("📊 BOUNDS CHECK:")
         if forecast.upper_bound and forecast.lower_bound:
-            print(f"  Upper Bound: ₹{forecast.upper_bound:,.2f}")
-            print(f"  Lower Bound: ₹{forecast.lower_bound:,.2f}")
-            print(f"  Predicted:   ₹{forecast.predicted_amount:,.2f}")
+            print(f"  Upper Bound: {format_currency(forecast.upper_bound, company=forecast.company)}")
+            print(f"  Lower Bound: {format_currency(forecast.lower_bound, company=forecast.company)}")
+            print(f"  Predicted:   {format_currency(forecast.predicted_amount, company=forecast.company)}")
             
             if forecast.upper_bound <= forecast.lower_bound:
                 print("  🚨 CRITICAL ERROR: Upper bound ≤ Lower bound!")
                 
                 # Suggest fix
                 print("\n💡 SUGGESTED FIX:")
-                print(f"  Swap values: Upper = ₹{forecast.lower_bound:,.2f}, Lower = ₹{forecast.upper_bound:,.2f}")
+                print(f"  Swap values: Upper = {format_currency(forecast.lower_bound, company=forecast.company)}, Lower = {format_currency(forecast.upper_bound, company=forecast.company)}")
                 
                 # Offer to fix automatically
                 fix_response = input("  Would you like to fix this automatically? (y/n): ")
@@ -459,8 +460,8 @@ if __name__ == "__main__":
     
     for test in test_cases:
         print(f"\nTest: {test['name']}")
-        print(f"  Upper: ₹{test['upper']:,.2f}")
-        print(f"  Lower: ₹{test['lower']:,.2f}")
+        print(f"  Upper: {format_currency(test['upper'])}")
+        print(f"  Lower: {format_currency(test['lower'])}")
         
         if test['upper'] <= test['lower']:
             result = "CRITICAL"
