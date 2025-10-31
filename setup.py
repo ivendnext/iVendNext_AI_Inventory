@@ -5,7 +5,7 @@ with open('requirements.txt', 'r') as f:
     requirements = [line.strip() for line in f if line.strip() and not line.startswith('#')]
 
 setup(
-    name='ai_inventory',
+    name='ivendnext_ai_inventory',
     version='2.1.0',
     description='AI-powered inventory and sales forecasting for ERPNext',
     author='AI Inventory Team',

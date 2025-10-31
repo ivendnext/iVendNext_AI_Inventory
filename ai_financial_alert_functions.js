@@ -6,7 +6,7 @@
 // Test function to create sample alerts for demonstration
 function create_sample_financial_alert() {
     frappe.call({
-        method: "ai_inventory.ai_inventory.doctype.ai_financial_alert.ai_financial_alert.create_financial_alert",
+        method: "ivendnext_ai_inventory.ivendnext_ai_inventory.doctype.ai_financial_alert.ai_financial_alert.create_financial_alert",
         args: {
             alert_data: {
                 company: "TBO Cloud",
@@ -41,7 +41,7 @@ function create_sample_financial_alert() {
 // Function to resolve an alert
 function resolve_financial_alert(alert_id, action_taken, action_result) {
     frappe.call({
-        method: "ai_inventory.ai_inventory.doctype.ai_financial_alert.ai_financial_alert.resolve_alert",
+        method: "ivendnext_ai_inventory.ivendnext_ai_inventory.doctype.ai_financial_alert.ai_financial_alert.resolve_alert",
         args: {
             alert_id: alert_id,
             action_taken: action_taken,
@@ -67,7 +67,7 @@ function resolve_financial_alert(alert_id, action_taken, action_result) {
 // Function to get alert statistics
 function get_alert_statistics() {
     frappe.call({
-        method: "ai_inventory.ai_inventory.doctype.ai_financial_alert.ai_financial_alert.get_active_alerts",
+        method: "ivendnext_ai_inventory.ivendnext_ai_inventory.doctype.ai_financial_alert.ai_financial_alert.get_active_alerts",
         callback: function(r) {
             if (r.message && r.message.success) {
                 let alerts = r.message.alerts;
@@ -89,7 +89,7 @@ function get_alert_statistics() {
 // Function to create alert from forecast check
 function create_alert_from_forecast_check(forecast_name) {
     frappe.call({
-        method: "ai_inventory.ai_inventory.doctype.ai_financial_forecast.ai_financial_forecast.check_balance_alerts",
+        method: "ivendnext_ai_inventory.ivendnext_ai_inventory.doctype.ai_financial_forecast.ai_financial_forecast.check_balance_alerts",
         args: {
             forecast_name: forecast_name
         },

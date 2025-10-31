@@ -67,7 +67,7 @@ def create_sample_data():
     
     # Test the report
     print('\nTesting the report with sample data...')
-    from ai_inventory.ai_inventory.report.forecast_accuracy_report.forecast_accuracy_report import execute
+    from ivendnext_ai_inventory.ivendnext_ai_inventory.report.forecast_accuracy_report.forecast_accuracy_report import execute
     
     filters = {
         'company': 'EXTRA APPAREL STORE',
